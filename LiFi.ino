@@ -23,44 +23,26 @@
 
 static int TRESHOLD = 70;
 static unsigned int standardDelay = 10000; //10000 is limit
-
+byte i; // Declare a global 'i' such that the loop function is able to use its inherent property of infinite looping.
+        // Also, i always has a value less than 255, so use 'byte' to reduce memory usage.
 void setup() {
   Serial.begin(9600); // 9600 bits per second
   pinMode(3,OUTPUT); //digital PWM 3 on output
-  int sensorValue = 0;
+  i = 97;
 }
 
 void loop() {
   //high A0 value is one, low A0 value is zero
-  WriteChar('a');
-  WriteChar('b');
-  WriteChar('c');
-  WriteChar('d');
-  WriteChar('e');
-  WriteChar('f');
-  WriteChar('g');
-  WriteChar('h');
-  WriteChar('i');
-  WriteChar('j');
-  WriteChar('k');
-  WriteChar('l');
-  WriteChar('m');
-  WriteChar('n');
-  WriteChar('o');
-  WriteChar('p');
-  WriteChar('q');
-  WriteChar('r');
-  WriteChar('s');
-  WriteChar('t');
-  WriteChar('u');
-  WriteChar('v');
-  WriteChar('w');
-  WriteChar('x');
-  WriteChar('y');
-  WriteChar('z');
+  if(i == 123)
+    i = 97; // Re-initialize 'i';
+  else{
+    LightFlash(i);
+    i += 1;
+  }
 }
 
-void WriteChar(int str){
+/*
+void WriteChar(byte str){ // Changed the signature of parameter from 'int' to 'byte'
   switch (str){
     case 97:
       //code for a is 011 0001
@@ -172,10 +154,46 @@ void WriteChar(int str){
       break;
   }
 }
+*/
+void LightFlash(byte num){
 
-void LightFlash(boolean a, boolean b, boolean c, boolean d, boolean e, boolean f, boolean g){
+  /*
+  Loop Invariant of LightFlash function : 
+  digitalWrite(3, LOW);
+  unsigned long int prod = 1;
+  for i = 6 to 0 do:
+    if ith bit of your ascii character is 1, then digitalWrite(3, HIGH);
+    delayMicroseconds(standardDelay / 2);
+    sensorValue += ((AnalogRead(A0) < THRESHOLD)*prod); // This step reads the analog light signal, and adds to sensor value which is used for identification of light.
+    prod *= 10; 
+  PrintChar(sensorValue);
+  */
+
+  // Convert byte into binary. And then explore the AnalogRead Portion
+  // The function with the loops takes the same amount of time as compared to the switch case statement which is comparatively difficult to manage.
+
+  unsigned long int prod = 1000000;
+  unsigned long int sensorValue = 0;
+  byte binary[7];
+  for(byte j = 0; j <= 6; j += 1){
+    if(num % 2 == 0) binary[j] = true;
+    else binary[j] = false;
+    num /= 2;
+  }
+  for(byte j = 0; j < 7; j++){
+    digitalWrite(3, LOW);
+    if(binary[j] == true)
+      digitalWrite(3, HIGH);
+    sensorValue += ((AnalogRead(A0) < THRESHOLD)*prod);
+    prod /= 10;
+    delayMicroseconds(standardDelay / 2);
+  }
+
+  PrintChar(result);
 
 
+//////////////////////////////////////////////////////////////
+  /*
   digitalWrite(3,LOW);
   if (a == true){
     digitalWrite(3,HIGH);
@@ -240,6 +258,7 @@ void LightFlash(boolean a, boolean b, boolean c, boolean d, boolean e, boolean f
   
   //Serial.println(result);
   PrintChar(result);
+  */
 }
 
 void PrintChar(long binary){
